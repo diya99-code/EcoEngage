@@ -12,10 +12,16 @@ router.post('/register', async (req, res) => {
 
     try {
         // Check if user exists
-        const searchResult = await esClient.search({
-            index: 'users',
-            query: { term: { "username.keyword": username } }
-        });
+        let searchResult;
+        try {
+            searchResult = await esClient.search({
+                index: 'users',
+                query: { term: { "username.keyword": username } }
+            });
+        } catch (e) {
+            // Index doesn't exist yet, which is fine for registration
+            searchResult = { hits: { total: { value: 0 } } };
+        }
 
         if (searchResult.hits.total.value > 0) {
             return res.status(400).json({ error: 'Username already exists' });
@@ -51,10 +57,15 @@ router.post('/login', async (req, res) => {
     const { username, password } = req.body;
 
     try {
-        const searchResult = await esClient.search({
-            index: 'users',
-            query: { term: { "username.keyword": username } }
-        });
+        let searchResult;
+        try {
+            searchResult = await esClient.search({
+                index: 'users',
+                query: { term: { "username.keyword": username } }
+            });
+        } catch (e) {
+            return res.status(400).json({ error: 'User not found' });
+        }
 
         if (searchResult.hits.total.value === 0) {
             return res.status(400).json({ error: 'User not found' });
