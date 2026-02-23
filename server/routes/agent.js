@@ -37,7 +37,7 @@ router.post('/chat', async (req, res) => {
         if (genAI) {
             try {
                 // USE REAL GEMINI AI
-                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const model = genAI.getGenerativeModel({ model: "gemini-flash-latest" });
                 const prompt = `You are the EcoToken Assistant. Use the following context to answer the user's question accurately.
           Context: ${context}
           User Question: "${message}"
