@@ -35,17 +35,23 @@ router.post('/chat', async (req, res) => {
         let reasoning = "";
 
         if (genAI) {
-            // USE REAL GEMINI AI
-            const model = genAI.getGenerativeModel({ model: "gemini-2.0-flash" });
-            const prompt = `You are the EcoToken Assistant. Use the following context to answer the user's question accurately.
-      Context: ${context}
-      User Question: "${message}"
-      
-      Answer in a friendly, concise way. If they ask about rewards, use the context. If they ask to redeem, explain they can do it on the dashboard.`;
+            try {
+                // USE REAL GEMINI AI
+                const model = genAI.getGenerativeModel({ model: "gemini-1.5-flash" });
+                const prompt = `You are the EcoToken Assistant. Use the following context to answer the user's question accurately.
+          Context: ${context}
+          User Question: "${message}"
+          
+          Answer in a friendly, concise way. If they ask about rewards, use the context. If they ask to redeem, explain they can do it on the dashboard.`;
 
-            const result = await model.generateContent(prompt);
-            responseText = result.response.text();
-            reasoning = "ES|QL Verified Context + Gemini 2.0 Flash Reasoning";
+                const result = await model.generateContent(prompt);
+                responseText = result.response.text();
+                reasoning = "ES|QL Verified Context + Gemini 1.5 Reasoning";
+            } catch (aiError) {
+                console.error("Gemini Error:", aiError);
+                responseText = `AI Error: ${aiError.message}. This usually means your API Key quota is empty or the model is not available.`;
+                reasoning = "AI Connection Failed";
+            }
         } else {
             // FALLBACK TO MOCK IF NO KEY
             responseText = "Gemini API Key missing. Please set GEMINI_API_KEY in Railway.";
@@ -60,6 +66,7 @@ router.post('/chat', async (req, res) => {
         });
 
     } catch (error) {
+        console.error("General Route Error:", error);
         res.status(500).json({ error: error.message });
     }
 });
